@@ -1,0 +1,31 @@
+from confluent_kafka import Producer
+import json
+config = {
+        # User-specific properties that you must set
+        'bootstrap.servers': '',
+        'sasl.username':     '',
+        'sasl.password':     '',
+
+        # Fixed properties
+        'security.protocol': 'SASL_SSL',
+        'sasl.mechanisms':   'PLAIN',
+        #'acks':              'all',
+        'client.id': 'Gitansh Syal'
+    }
+producer=Producer(config)
+def acked(err,msg):
+    msg_key=msg.key().decode('utf-8')
+    msg_value=msg.value().decode('utf-8')
+    if err is not None:
+        print(f'Failed to deliver the message:{err}')
+    else:
+        print(f'msg is produced:key is{msg_key} and value is{msg_value}')
+
+
+with open('C:/Users/HP/Downloads/user_events.json') as file:
+    for line in file:
+        order=json.loads(line)
+        user_id = str(order['user_id'])
+        producer.produce('user_events',key=user_id,value=line,callback=acked)
+        producer.poll(1)
+        producer.flush()
